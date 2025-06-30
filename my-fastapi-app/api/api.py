@@ -4,15 +4,23 @@ import shutil
 import os
 import uuid
 import speech_recognition as sr
+from mangum import Mangum
 
-# Our Models :
+# === Import your own model modules ===
 from text_preprocessing import get_original_text
 from translation_pipeline import coll2formal_translation
 from sentiment_analysis_pipeline import sentiment_analysis
 
 app = FastAPI()
 
-# ==================== VIDEO API ====================
+
+# === Root Route for Testing ===
+@app.get("/")
+def read_root():
+    return {"message": "FastAPI is live on Vercel!"}
+
+
+# === VIDEO API Endpoint ===
 @app.post("/process-video/")
 async def process_video(file: UploadFile = File(...)):
     try:
@@ -50,7 +58,7 @@ async def process_video(file: UploadFile = File(...)):
         )
 
 
-# ==================== AUDIO API ====================
+# === AUDIO API Helpers and Endpoint ===
 def extract_text(file_path: str) -> str:
     recognizer = sr.Recognizer()
     try:
@@ -63,6 +71,7 @@ def extract_text(file_path: str) -> str:
         return f"error: Google Speech Recognition API error: {e}"
     except Exception as e:
         return f"error: {str(e)}"
+
 
 @app.post("/process-audio/")
 async def process_audio(file: UploadFile = File(...)):
@@ -98,5 +107,6 @@ async def process_audio(file: UploadFile = File(...)):
         if os.path.exists(temp_path):
             os.remove(temp_path)
 
-# Wrap with handler for Vercel
-handler = Mangum(fastapi_app)
+
+# === Required for Vercel Serverless Handler ===
+handler = Mangum(app)
