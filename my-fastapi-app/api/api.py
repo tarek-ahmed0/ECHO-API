@@ -97,3 +97,6 @@ async def process_audio(file: UploadFile = File(...)):
     finally:
         if os.path.exists(temp_path):
             os.remove(temp_path)
+
+# Wrap with handler for Vercel
+handler = Mangum(fastapi_app)
